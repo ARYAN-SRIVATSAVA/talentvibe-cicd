@@ -110,7 +110,7 @@ const JobDetailsPage = () => {
     const stableCountRef = useRef(0);
     const lastResumeCountRef = useRef(0);
 
-    const fetchJobDetails = async () => {
+    const fetchJobDetails = useCallback(async () => {
         try {
             const response = await fetch(`/api/jobs/${jobId}`);
             if (!response.ok) {
