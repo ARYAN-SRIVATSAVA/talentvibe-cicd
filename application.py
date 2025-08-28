@@ -248,8 +248,8 @@ def analyze_resume_with_ai(job_description, resume_text, filename):
     # Check rate limit before making API call
     # Temporarily disabled for debugging
     # if not check_rate_limit():
-        print(f"Rate limit reached for {filename}, using fallback analysis")
-        # return create_fallback_analysis(filename, "Rate limit reached")
+#         print(f"Rate limit reached for {filename}, using fallback analysis")
+#         return create_fallback_analysis(filename, "Rate limit reached")
     
     try:
         # Prepare prompt with better error handling
