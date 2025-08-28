@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 from datetime import datetime
 import json
 import hashlib
@@ -431,7 +432,7 @@ def health_check():
     """Simple health check without external dependencies"""
     try:
         # Test database connection only
-        db.session.execute('SELECT 1')
+        db.session.execute(text('SELECT 1'))
         return jsonify({
             'status': 'healthy',
             'message': 'TalentVibe API is running',
