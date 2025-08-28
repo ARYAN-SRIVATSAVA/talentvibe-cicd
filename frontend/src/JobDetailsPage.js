@@ -152,7 +152,7 @@ const JobDetailsPage = () => {
             setError(err.message);
         } finally {
             setIsLoading(false);
-        }
+        }, [jobId]);
     }
 
     useEffect(() => {
