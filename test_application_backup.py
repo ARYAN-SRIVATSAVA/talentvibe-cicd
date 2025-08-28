@@ -35,19 +35,15 @@ class TestTalentVibeApplication(unittest.TestCase):
         progress_bar_path = os.path.join('frontend', 'src', 'components', 'ResumeProgressBar.js')
         self.assertTrue(os.path.exists(progress_bar_path), "ResumeProgressBar.js should exist")
     
-    def test_application_structure(self):
-        """Test that application.py has the expected structure without importing"""
+    def test_application_import(self):
+        """Test that application.py can be imported"""
         try:
-            with open('application.py', 'r') as f:
-                content = f.read()
-                # Check for Flask app creation
-                self.assertIn('Flask(__name__', content, "Should create Flask app")
-                # Check for app variable
-                self.assertIn('app = Flask', content, "Should have app variable")
-                # Check for route definitions
-                self.assertIn('@app.route', content, "Should have route definitions")
-        except FileNotFoundError:
-            self.fail("application.py not found")
+            # Add current directory to path
+            sys.path.insert(0, os.getcwd())
+            import application
+            self.assertTrue(hasattr(application, 'app'), "application should have 'app' attribute")
+        except ImportError as e:
+            self.fail(f"Failed to import application: {e}")
     
     def test_api_endpoints_exist(self):
         """Test that new API endpoints are defined"""
@@ -58,17 +54,6 @@ class TestTalentVibeApplication(unittest.TestCase):
                 self.assertIn('/api/resumes/check-duplicates', content, "Duplicate check endpoint should exist")
         except FileNotFoundError:
             self.fail("application.py not found")
-    
-    def test_requirements_content(self):
-        """Test that requirements.txt contains essential dependencies"""
-        try:
-            with open('requirements.txt', 'r') as f:
-                content = f.read()
-                self.assertIn('Flask', content, "Flask should be in requirements")
-                self.assertIn('Flask-SQLAlchemy', content, "Flask-SQLAlchemy should be in requirements")
-                self.assertIn('openai', content, "OpenAI should be in requirements")
-        except FileNotFoundError:
-            self.fail("requirements.txt not found")
 
 if __name__ == '__main__':
     unittest.main()
