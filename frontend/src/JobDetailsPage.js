@@ -132,22 +132,23 @@ const JobDetailsPage = () => {
             
             setJobDetails(data);
             
-            // Check if job exists but no resumes yet (processing state)
-            if (data && (!data.resumes || data.resumes.length === 0)) {
-                setIsProcessing(true);
-            } else {
-                // We have resumes, so processing is done or in progress
-                setIsProcessing(false);
-                if (data.resumes && data.resumes.length > 0) {
-                    // Automatically select the first resume or a previously selected one
-                    const resumeToSelect = selectedResumeId 
-                        ? data.resumes.find(r => r.id === selectedResumeId) || data.resumes[0]
-                        : data.resumes[0];
-                    setSelectedResumeId(resumeToSelect.id);
-                } else {
-                    setSelectedResumeId(null);
-                }
+            // Auto-select first resume if none selected
+            if (!selectedResumeId && data.resumes && data.resumes.length > 0) {
+                setSelectedResumeId(data.resumes[0].id);
             }
+            
+            // Determine if we're still processing
+            const totalResumes = data.resumes?.length || 0;
+            const analyzedResumes = data.resumes?.filter(r => r.analysis)?.length || 0;
+            
+            // We're processing if:
+            // 1. No resumes yet (might still be processing)
+            // 2. Some resumes don't have analysis yet
+            const stillProcessing = totalResumes === 0 || analyzedResumes < totalResumes;
+            setIsProcessing(stillProcessing);
+            
+            console.log(`🔄 Processing status: ${stillProcessing ? 'Still processing' : 'Complete'}`);
+            
         } catch (err) {
             setError(err.message);
         } finally {
@@ -165,28 +166,51 @@ const JobDetailsPage = () => {
     useEffect(() => {
         let interval;
         
-        // Continue auto-refresh until all resumes have analysis results
+        // Continue auto-refresh until we detect processing is complete
         if (jobDetails) {
+            console.log('🔄 Setting up auto-refresh for job details');
             interval = setInterval(() => {
-                console.log('Auto-refreshing job details...');
+                console.log('🔄 Auto-refreshing job details...');
                 
-                // Check if all resumes have analysis results
+                // Check current state
                 const totalResumes = jobDetails.resumes?.length || 0;
                 const analyzedResumes = jobDetails.resumes?.filter(r => r.analysis)?.length || 0;
                 
-                // Stop auto-refresh if all resumes are analyzed
-                if (totalResumes > 0 && analyzedResumes === totalResumes) {
-                    console.log('All resumes analyzed, stopping auto-refresh');
-                    clearInterval(interval);
-                    return;
-                }
+                console.log(`📊 Resume analysis progress: ${analyzedResumes}/${totalResumes} analyzed`);
                 
-                fetchJobDetails();
-            }, 3000); // Poll every 3 seconds (more aggressive)
+                // Continue refreshing if:
+                // 1. We have resumes but not all are analyzed
+                // 2. We have no resumes yet (might still be processing)
+                // 3. We're in the first few seconds after redirect (allow time for processing to start)
+                
+                const shouldContinue = (
+                    totalResumes === 0 || // No resumes yet, keep checking
+                    analyzedResumes < totalResumes || // Some resumes not analyzed yet
+                    stableCountRef.current < 10 // Keep checking for at least 30 seconds (10 * 3s)
+                );
+                
+                if (shouldContinue) {
+                    console.log('🔄 Continuing auto-refresh, fetching job details...');
+                    fetchJobDetails();
+                    
+                    // Increment stable count if we have resumes and they're all analyzed
+                    if (totalResumes > 0 && analyzedResumes === totalResumes) {
+                        stableCountRef.current += 1;
+                        console.log(`📊 All resumes analyzed, stable count: ${stableCountRef.current}/10`);
+                    } else {
+                        // Reset stable count if we're still processing
+                        stableCountRef.current = 0;
+                    }
+                } else {
+                    console.log('✅ Processing appears complete, stopping auto-refresh');
+                    clearInterval(interval);
+                }
+            }, 3000); // Poll every 3 seconds
         }
         
         return () => {
             if (interval) {
+                console.log('🛑 Cleaning up auto-refresh interval');
                 clearInterval(interval);
             }
         };
@@ -275,7 +299,7 @@ const JobDetailsPage = () => {
     if (!jobDetails) return <div className="job-details-container"><p>Job not found.</p></div>;
     
     // Show processing state when job exists but no resumes yet
-    if (isProcessing) {
+    if (isProcessing && (!jobDetails?.resumes || jobDetails.resumes.length === 0)) {
         return (
             <div className="job-details-container">
                 <Link to="/jobs" className="back-link">← Back to All Jobs</Link>
@@ -288,7 +312,7 @@ const JobDetailsPage = () => {
                         <div className="processing-details">
                             <p><strong>Job ID:</strong> {jobId}</p>
                             <p><strong>Status:</strong> Processing...</p>
-                            <p><strong>Auto-refresh:</strong> Active (every 5 seconds)</p>
+                            <p><strong>Auto-refresh:</strong> Active (every 3 seconds)</p>
                         </div>
                     </div>
                 </div>
@@ -301,13 +325,14 @@ const JobDetailsPage = () => {
             <Link to="/jobs" className="back-link">← Back to All Jobs</Link>
             
             {/* Show progress indicator if auto-refresh is still active */}
-            {stableCountRef.current < 6 && jobDetails && jobDetails.resumes && jobDetails.resumes.length > 0 && (
+            {isProcessing && jobDetails && jobDetails.resumes && jobDetails.resumes.length > 0 && (
                 <div className="glass-container processing-progress">
                     <div className="progress-content">
                         <div className="progress-spinner">🔄</div>
-                        <p><strong>Processing more resumes...</strong></p>
-                        <p>Currently showing {jobDetails.resumes.length} processed resume(s)</p>
-                        <p>Auto-refresh active - checking for more every 5 seconds</p>
+                        <p><strong>Processing resumes...</strong></p>
+                        <p>Currently showing {jobDetails.resumes.length} resume(s)</p>
+                        <p>Auto-refresh active - checking for updates every 3 seconds</p>
+                        <p><strong>Progress:</strong> {jobDetails.resumes.filter(r => r.analysis).length}/{jobDetails.resumes.length} analyzed</p>
                     </div>
                 </div>
             )}
