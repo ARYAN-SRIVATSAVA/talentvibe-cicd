@@ -170,7 +170,7 @@ const UploadPage = () => {
 
     // Initialize WebSocket connection
     useEffect(() => {
-        socketRef.current = io('http://127.0.0.1:5000');
+        socketRef.current = io();
         
         socketRef.current.on('connect', () => {
             console.log('Connected to server');
