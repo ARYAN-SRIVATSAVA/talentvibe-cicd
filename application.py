@@ -246,9 +246,10 @@ def analyze_resume_with_ai(job_description, resume_text, filename):
     """Analyze resume using OpenAI GPT-4 with comprehensive error handling"""
     
     # Check rate limit before making API call
-    if not check_rate_limit():
+    # Temporarily disabled for debugging
+    # if not check_rate_limit():
         print(f"Rate limit reached for {filename}, using fallback analysis")
-        return create_fallback_analysis(filename, "Rate limit reached")
+        # return create_fallback_analysis(filename, "Rate limit reached")
     
     try:
         # Prepare prompt with better error handling
