@@ -397,6 +397,13 @@ const UploadPage = () => {
                     
                     messageText += " You'll be redirected when complete.";
                     
+                    // Immediately redirect to the job overview page
+                    if (data.job_id) {
+                        setTimeout(() => {
+                            navigate(`/jobs/${data.job_id}`);
+                        }, 500); // Small delay to show the success message
+                    }
+                    
                     setMessage(messageText);
                     // Data is now being processed, so we can clear the stored data
                     clearStoredData();

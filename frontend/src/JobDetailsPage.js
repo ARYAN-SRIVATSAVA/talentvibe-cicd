@@ -165,20 +165,24 @@ const JobDetailsPage = () => {
     useEffect(() => {
         let interval;
         
-        // Continue auto-refresh until resume count is stable for 6 consecutive checks (30 seconds)
+        // Continue auto-refresh until all resumes have analysis results
         if (jobDetails) {
             interval = setInterval(() => {
                 console.log('Auto-refreshing job details...');
                 
-                // Stop auto-refresh if stable for 6 checks (30 seconds total)
-                if (stableCountRef.current >= 6) {
-                    console.log('Resume count stable for 6 checks (30 seconds), stopping auto-refresh');
+                // Check if all resumes have analysis results
+                const totalResumes = jobDetails.resumes?.length || 0;
+                const analyzedResumes = jobDetails.resumes?.filter(r => r.analysis)?.length || 0;
+                
+                // Stop auto-refresh if all resumes are analyzed
+                if (totalResumes > 0 && analyzedResumes === totalResumes) {
+                    console.log('All resumes analyzed, stopping auto-refresh');
                     clearInterval(interval);
                     return;
                 }
                 
                 fetchJobDetails();
-            }, 5000); // Poll every 5 seconds
+            }, 3000); // Poll every 3 seconds (more aggressive)
         }
         
         return () => {
