@@ -933,7 +933,9 @@ def process_resumes_background(file_data, job_description, job_id):
                         skipped_files.append({'filename': filename, 'reason': 'AI and database error'})
                 
                 # Clean up memory more aggressively
-                del content, file_stream, analysis_text
+                if "content" in locals(): del content
+                if "file_stream" in locals(): del file_stream
+                if "analysis_text" in locals(): del analysis_text
                 gc.collect()  # Force garbage collection after each file
                 
             except Exception as e:
@@ -941,7 +943,9 @@ def process_resumes_background(file_data, job_description, job_id):
                 skipped_files.append({'filename': filename, 'reason': str(e)})
                 # Clean up memory even on error
                 try:
-                    del content, file_stream, analysis_text
+                    if "content" in locals(): del content
+                    if "file_stream" in locals(): del file_stream
+                    if "analysis_text" in locals(): del analysis_text
                     gc.collect()
                 except:
                     pass
