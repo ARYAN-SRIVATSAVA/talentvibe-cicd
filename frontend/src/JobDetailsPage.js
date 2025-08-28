@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import FeedbackModal from './components/FeedbackModal';
 import InterviewModal from './components/InterviewModal';
@@ -152,8 +152,8 @@ const JobDetailsPage = () => {
             setError(err.message);
         } finally {
             setIsLoading(false);
-        }, [jobId]);
-    }
+        }
+    }, [jobId]);
 
     useEffect(() => {
         setIsLoading(true);
