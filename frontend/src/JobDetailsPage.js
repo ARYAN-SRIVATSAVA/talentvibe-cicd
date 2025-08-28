@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import FeedbackModal from './components/FeedbackModal';
 import InterviewModal from './components/InterviewModal';
@@ -102,17 +102,15 @@ const JobDetailsPage = () => {
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [expectedResumeCount, setExpectedResumeCount] = useState(null);
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
     const [selectedResumeForFeedback, setSelectedResumeForFeedback] = useState(null);
     const [isInterviewModalOpen, setIsInterviewModalOpen] = useState(false);
-    const [selectedResumeForInterview, setSelectedResumeForInterview] = useState(null);
     const [currentInterviewResume, setCurrentInterviewResume] = useState(null);
     const detailsRef = useRef(null);
     const stableCountRef = useRef(0);
     const lastResumeCountRef = useRef(0);
 
-    const fetchJobDetails = useCallback(async () => {
+    const fetchJobDetails(async () => {
         try {
             const response = await fetch(`/api/jobs/${jobId}`);
             if (!response.ok) {
@@ -214,10 +212,6 @@ const JobDetailsPage = () => {
         setSelectedResumeId(newId);
     };
 
-    const handleFeedbackClick = (resume) => {
-        setSelectedResumeForFeedback(resume);
-        setIsFeedbackModalOpen(true);
-    };
 
     const handleFeedbackSubmit = () => {
         // Refresh job details to show any updates

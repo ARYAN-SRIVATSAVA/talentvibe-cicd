@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import './UploadPage.css';
@@ -19,7 +19,6 @@ const UploadPage = () => {
     
     const [message, setMessage] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
     const [analysisResult, setAnalysisResult] = useState(null);
     const [progressUpdates, setProgressUpdates] = useState([]);
     const [currentJobId, setCurrentJobId] = useState(null);
@@ -227,8 +226,8 @@ const UploadPage = () => {
                     setTimeout(() => setMessage(''), 3000);
                 }
             } else {
-                const errorText = await response.text();
-                console.error('JD check error:', errorText);
+                
+                
                 setMessage('Warning: Could not check for existing JD file. Proceeding with upload.');
             }
         } catch (error) {
@@ -280,8 +279,8 @@ const UploadPage = () => {
                 // Clear the message after 5 seconds
                 setTimeout(() => setMessage(''), 5000);
             } else {
-                const errorText = await response.text();
-                console.error('Duplicate check error:', errorText);
+                
+                
                 setMessage('Warning: Could not check for duplicate resumes.');
             }
         } catch (error) {
@@ -375,7 +374,7 @@ const UploadPage = () => {
                 });
 
                 if (!response.ok) {
-                    const errorText = await response.text();
+                    
                     throw new Error(`Server error: ${response.status}`);
                 }
 
