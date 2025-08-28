@@ -331,8 +331,8 @@ Return only valid JSON.
                 else:
                     return create_fallback_analysis(filename, "Rate limit exceeded")
                     
-            except openai.QuotaExceededError:
-                print(f"Quota exceeded for {filename}")
+            except openai.APIError as e:
+                print(f"API error for {filename}: {e}")
                 return create_fallback_analysis(filename, "API quota exceeded")
                 
             except openai.AuthenticationError:
