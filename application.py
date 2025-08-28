@@ -453,6 +453,9 @@ def create_fallback_analysis(filename, error_reason):
             "location": "Not specified"
         }
     })
+@app.route("/<path:path>")
+def serve_static(path):
+    """Serve static files from React build"""
     try:
         # Check if the file exists
         file_path = os.path.join(app.static_folder, path)
