@@ -478,6 +478,157 @@ def refresh_session():
         db.session.rollback()
 
 @app.route('/api/analyze', methods=['POST'])
+
+def extract_text_from_file(file_stream):
+    """Extract text from various file formats"""
+    try:
+        filename = file_stream.filename.lower()
+        file_stream.seek(0)
+        
+        if filename.endswith(".pdf"):
+            try:
+                import fitz
+                doc = fitz.open(stream=file_stream.read(), filetype="pdf")
+                content = ""
+                for page in doc:
+                    content += page.get_text()
+                doc.close()
+                return content[:50000]
+            except Exception as e:
+                print(f"PDF extraction error: {e}")
+                return f"PDF extraction failed for {filename}"
+        elif filename.endswith(".docx"):
+            try:
+                import docx
+                doc = docx.Document(file_stream)
+                content = ""
+                for paragraph in doc.paragraphs:
+                    content += paragraph.text + "\n"
+                return content[:50000]
+            except Exception as e:
+                print(f"DOCX extraction error: {e}")
+                return f"DOCX extraction failed for {filename}"
+        elif filename.endswith(".doc"):
+            return extract_text_from_doc_binary(file_stream)
+        elif filename.endswith(".txt"):
+            return file_stream.read().decode("utf-8")[:50000]
+        else:
+            return f"Unsupported file type: {filename}"
+    except Exception as e:
+        print(f"File extraction error: {e}")
+        return f"File extraction failed: {str(e)}"
+
+@app.route("/api/jd/check", methods=["POST"])
+def check_existing_jd():
+    """Check if a job description file already exists in the database"""
+    try:
+        if "jd_file" not in request.files:
+            return jsonify({"error": "No job description file provided"}), 400
+        
+        jd_file = request.files["jd_file"]
+        if jd_file.filename == "":
+            return jsonify({"error": "No file selected"}), 400
+        
+        # Extract content from the JD file
+        try:
+            content = extract_text_from_file(jd_file)
+            content_hash = hashlib.sha256(content.encode()).hexdigest()
+        except Exception as e:
+            print(f"Error extracting JD content: {e}")
+            return jsonify({"error": "Could not read job description file"}), 400
+        
+        # Check if this JD content already exists
+        existing_job = Job.query.filter_by(description=content).first()
+        
+        if existing_job:
+            # Get resume count for this job
+            resume_count = Resume.query.filter_by(job_id=existing_job.id).count()
+            
+            return jsonify({
+                "exists": True,
+                "message": f"Job description already exists (Job #{existing_job.id})",
+                "job": {
+                    "id": existing_job.id,
+                    "resume_count": resume_count
+                },
+                "jd_file": {
+                    "filename": jd_file.filename,
+                    "content": content,
+                    "file_type": jd_file.filename.split(".")[-1] if "." in jd_file.filename else "unknown",
+                    "created_at": existing_job.id  # Using job ID as proxy for creation time
+                }
+            })
+        else:
+            return jsonify({
+                "exists": False,
+                "message": "This is a new job description"
+            })
+            
+    except Exception as e:
+        print(f"JD check error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route("/api/resumes/check-duplicates", methods=["POST"])
+def check_resume_duplicates():
+    """Check for duplicate resumes within a specific job"""
+    try:
+        if "job_id" not in request.form:
+            return jsonify({"error": "Job ID is required"}), 400
+        
+        job_id = int(request.form["job_id"])
+        resume_files = request.files.getlist("resumes")
+        
+        if not resume_files:
+            return jsonify({"error": "No resume files provided"}), 400
+        
+        # Get existing resumes for this job
+        existing_resumes = Resume.query.filter_by(job_id=job_id).all()
+        existing_hashes = {resume.content_hash for resume in existing_resumes}
+        
+        duplicates = []
+        unique_count = 0
+        total_files = len(resume_files)
+        
+        for resume_file in resume_files:
+            if resume_file.filename == "":
+                continue
+                
+            try:
+                content = extract_text_from_file(resume_file)
+                content_hash = hashlib.sha256(content.encode()).hexdigest()
+                
+                # Check if this content already exists
+                existing_resume = Resume.query.filter_by(job_id=job_id, content_hash=content_hash).first()
+                
+                if existing_resume:
+                    duplicates.append({
+                        "filename": resume_file.filename,
+                        "duplicate_of": {
+                            "resume_filename": existing_resume.filename,
+                            "candidate_name": existing_resume.candidate_name,
+                            "job_id": existing_resume.job_id
+                        }
+                    })
+                else:
+                    unique_count += 1
+                    
+            except Exception as e:
+                duplicates.append({
+                    "filename": resume_file.filename,
+                    "error": f"Could not process file: {str(e)}"
+                })
+        
+        return jsonify({
+            "job_id": job_id,
+            "total_files": total_files,
+            "unique_count": unique_count,
+            "duplicate_count": len(duplicates),
+            "duplicates": duplicates
+        })
+        
+    except Exception as e:
+        print(f"Duplicate check error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
 def analyze_resumes():
     """Analyze uploaded resumes with AI - return immediately, process asynchronously"""
     try:
