@@ -1119,3 +1119,33 @@ def delete_interview_question(question_id):
 if __name__ == "__main__":
     app = Flask(__name__)
     # ... rest of the startup code ... 
+@app.route("/api/health")
+def health_check():
+    """Simple health check endpoint for AWS Elastic Beanstalk"""
+    try:
+        # Test database connection
+        db.session.execute("SELECT 1")
+        return jsonify({
+            "status": "healthy",
+            "message": "TalentVibe API is running",
+            "database": "connected",
+            "timestamp": datetime.utcnow().isoformat()
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "degraded",
+            "message": "Database connection issue",
+            "database": f"error: {str(e)}",
+            "timestamp": datetime.utcnow().isoformat()
+        }), 500
+
+@app.route("/health")
+def simple_health_check():
+    """Simple health check without database dependency"""
+    return jsonify({
+        "status": "healthy",
+        "message": "TalentVibe application is running",
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+
