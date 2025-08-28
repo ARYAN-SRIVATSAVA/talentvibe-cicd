@@ -246,20 +246,23 @@ def analyze_resume_with_ai(job_description, resume_text, filename):
     """Analyze resume using OpenAI GPT-4 with comprehensive error handling"""
     
     # Check rate limit before making API call
+    print(f"Starting AI analysis for {filename}")
+    print(f"OpenAI API key configured: {bool(openai.api_key and openai.api_key != "your-openai-api-key-here")}")
+    print(f"Rate limit check: {check_rate_limit()}")
+    
+    # Check if OpenAI API key is configured
+    if not openai.api_key or openai.api_key == "your-openai-api-key-here":
+        print(f"OpenAI API key not configured for {filename}, using fallback analysis")
+        return create_fallback_analysis(filename, "OpenAI API key not configured")
+    
+    # Check rate limit before making API call
     # Temporarily disabled for debugging
+Resume Content:
     if not check_rate_limit():
         print(f"Rate limit reached for {filename}, using fallback analysis")
         return create_fallback_analysis(filename, "Rate limit reached")
     
     try:
-        # Prepare prompt with better error handling
-        prompt = f"""
-You are an expert HR recruiter and technical interviewer. Analyze this resume against the job description and provide a comprehensive assessment.
-
-Job Description:
-{job_description[:1000]}
-
-Resume Content:
 {resume_text[:2000]}
 
 Please provide your analysis in the following JSON format:
