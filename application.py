@@ -453,6 +453,25 @@ def create_fallback_analysis(filename, error_reason):
             "location": "Not specified"
         }
     })
+@app.route("/", methods=["GET", "POST"])
+def root():
+    """Handle root requests - serve React app for GET, redirect POST to analyze"""
+    if request.method == "GET":
+        # Serve the React app
+        try:
+            if not os.path.exists(app.static_folder):
+                return f"""<h1>TalentVibe</h1><p>Static folder not found: {app.static_folder}</p>"""
+            
+            index_path = os.path.join(app.static_folder, "index.html")
+            if not os.path.exists(index_path):
+                return f"""<h1>TalentVibe</h1><p>index.html not found in: {app.static_folder}</p>"""
+            
+            return send_from_directory(app.static_folder, "index.html")
+        except Exception as e:
+            return f"""<h1>TalentVibe</h1><p>Error serving React app: {str(e)}</p><p>Static folder: {app.static_folder}</p>"""
+    elif request.method == "POST":
+        # Redirect POST requests to the analyze endpoint
+        return jsonify({"error": "Please use /api/analyze endpoint for POST requests"}), 405
 @app.route("/<path:path>")
 def serve_static(path):
     """Serve static files from React build"""
