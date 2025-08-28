@@ -13,4 +13,3 @@ celery==5.3.4
 redis==5.0.1
 psutil==6.1.0
 gunicorn==23.0.0
-textract==1.6.4
