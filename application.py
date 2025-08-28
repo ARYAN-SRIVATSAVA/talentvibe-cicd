@@ -477,7 +477,6 @@ def refresh_session():
         # Only remove session if there's a critical error
         db.session.rollback()
 
-@app.route('/api/analyze', methods=['POST'])
 
 def extract_text_from_file(file_stream):
     """Extract text from various file formats"""
@@ -629,6 +628,7 @@ def check_resume_duplicates():
     except Exception as e:
         print(f"Duplicate check error: {e}")
         return jsonify({"error": "Internal server error"}), 500
+@app.route("/api/analyze", methods=["POST"])
 def analyze_resumes():
     """Analyze uploaded resumes with AI - return immediately, process asynchronously"""
     try:
