@@ -160,9 +160,7 @@ const JobDetailsPage = () => {
     useEffect(() => {
         setIsLoading(true);
         fetchJobDetails();
-    }, [jobId, fetchJobDetails]);
-
-    // Auto-refresh when processing resumes
+        setIsProcessing(true); // Show progress indicator immediately when page loads    // Auto-refresh when processing resumes
     useEffect(() => {
         let interval;
         
