@@ -109,7 +109,6 @@ const JobDetailsPage = () => {
     const detailsRef = useRef(null);
     const stableCountRef = useRef(0);
     const lastResumeCountRef = useRef(0);
-    const autoRefreshStartedRef = useRef(false);
 
     const fetchJobDetails = useCallback(async () => {
         try {
@@ -204,7 +203,7 @@ const JobDetailsPage = () => {
                     console.log('✅ Processing appears complete, stopping auto-refresh');
                     clearInterval(interval);
                 }
-            }, 3000); // Poll every 3 seconds
+            }, 5000); // Poll every 5 seconds
         }
         
         return () => {
@@ -298,7 +297,7 @@ const JobDetailsPage = () => {
     if (!jobDetails) return <div className="job-details-container"><p>Job not found.</p></div>;
     
     // Show processing state when job exists but no resumes yet
-    if (isProcessing && (!jobDetails?.resumes || jobDetails.resumes.length === 0)) {
+    if (isProcessing && (!jobDetails?.resumes || jobDetails?.resumes?.length || 0 === 0)) {
         return (
             <div className="job-details-container">
                 <Link to="/jobs" className="back-link">← Back to All Jobs</Link>
@@ -311,7 +310,7 @@ const JobDetailsPage = () => {
                         <div className="processing-details">
                             <p><strong>Job ID:</strong> {jobId}</p>
                             <p><strong>Status:</strong> Processing...</p>
-                            <p><strong>Auto-refresh:</strong> Active (every 3 seconds)</p>
+                            <p><strong>Auto-refresh:</strong> Active (every 5 seconds)</p>
                         </div>
                     </div>
                 </div>
@@ -324,14 +323,12 @@ const JobDetailsPage = () => {
             <Link to="/jobs" className="back-link">← Back to All Jobs</Link>
             
             {/* Show progress indicator if auto-refresh is still active */}
-            {isProcessing && jobDetails && jobDetails.resumes && jobDetails.resumes.length > 0 && (
-                <div className="glass-container processing-progress">
-                    <div className="progress-content">
-                        <div className="progress-spinner">🔄</div>
+            {isProcessing && jobDetails && jobDetails.resumes && jobDetails?.resumes?.length || 0 > 0 && (
+            {isProcessing && (
                         <p><strong>Processing resumes...</strong></p>
-                        <p>Currently showing {jobDetails.resumes.length} resume(s)</p>
-                        <p>Auto-refresh active - checking for updates every 3 seconds</p>
-                        <p><strong>Progress:</strong> {jobDetails.resumes.filter(r => r.analysis).length}/{jobDetails.resumes.length} analyzed</p>
+                        <p>Currently showing {jobDetails?.resumes?.length || 0} resume(s)</p>
+                        <p>Auto-refresh active - checking for updates every 5 seconds</p>
+                        <p><strong>Progress:</strong> {jobDetails?.resumes?.filter(r => r.analysis).length}/{jobDetails?.resumes?.length || 0} analyzed</p>
                     </div>
                 </div>
             )}
