@@ -102,6 +102,7 @@ const JobDetailsPage = () => {
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(true); // Show progress continuously
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
     const [selectedResumeForFeedback, setSelectedResumeForFeedback] = useState(null);
     const [isInterviewModalOpen, setIsInterviewModalOpen] = useState(false);
@@ -160,7 +161,9 @@ const JobDetailsPage = () => {
     useEffect(() => {
         setIsLoading(true);
         fetchJobDetails();
-        setIsProcessing(true); // Show progress indicator immediately when page loads    // Auto-refresh when processing resumes
+    }, [jobId, fetchJobDetails]);
+
+    // Auto-refresh when processing resumes
     useEffect(() => {
         let interval;
         
@@ -188,18 +191,11 @@ const JobDetailsPage = () => {
                 if (shouldContinue) {
                     console.log('🔄 Continuing auto-refresh, fetching job details...');
                     fetchJobDetails();
-                    
-                    // Increment stable count if we have resumes and they're all analyzed
-                    if (totalResumes > 0 && analyzedResumes === totalResumes) {
-                        stableCountRef.current += 1;
-                        console.log(`📊 All resumes analyzed, stable count: ${stableCountRef.current}/10`);
-                    } else {
-                        // Reset stable count if we're still processing
-                        stableCountRef.current = 0;
-                    }
                 } else {
-                    console.log('✅ Processing appears complete, stopping auto-refresh');
+                    console.log('✅ All resumes processed, stopping auto-refresh');
                     clearInterval(interval);
+                    setIsProcessing(false);
+                    setIsAnalyzing(false); // Stop showing progress when complete
                 }
             }, 3000); // Poll every 3 seconds
         }
@@ -320,15 +316,32 @@ const JobDetailsPage = () => {
         <div className="job-details-container">
             <Link to="/jobs" className="back-link">← Back to All Jobs</Link>
             
-            {/* Show progress indicator if auto-refresh is still active */}
-            {isProcessing && jobDetails && jobDetails.resumes && jobDetails.resumes.length > 0 && (
+            {/* Show continuous progress indicator during analysis */}
+            {isAnalyzing && (
                 <div className="glass-container processing-progress">
                     <div className="progress-content">
                         <div className="progress-spinner">🔄</div>
-                        <p><strong>Processing resumes...</strong></p>
-                        <p>Currently showing {jobDetails.resumes.length} resume(s)</p>
-                        <p>Auto-refresh active - checking for updates every 3 seconds</p>
-                        <p><strong>Progress:</strong> {jobDetails.resumes.filter(r => r.analysis).length}/{jobDetails.resumes.length} analyzed</p>
+                        <h4>Processing Progress</h4>
+                        <div className="progress-bar-wrapper">
+                            <div className="progress-bar">
+                                <div 
+                                    className="progress-fill"
+                                    style={{ 
+                                        width: jobDetails?.resumes ? `${(jobDetails.resumes.filter(r => r.analysis).length / jobDetails.resumes.length) * 100}%` : '60%',
+                                        animation: 'progress-pulse 2s infinite'
+                                    }}
+                                ></div>
+                            </div>
+                            <div className="progress-text">
+                                {jobDetails?.resumes ? (
+                                    <span>Processing {jobDetails.resumes.filter(r => r.analysis).length}/{jobDetails.resumes.length} resumes...</span>
+                                ) : (
+                                    <span>Starting analysis...</span>
+                                )}
+                            </div>
+                        </div>
+                        <p><em>Auto-refresh active - checking for updates every 3 seconds</em></p>
+                        <p><em>Processing will continue until all resumes are analyzed</em></p>
                     </div>
                 </div>
             )}
