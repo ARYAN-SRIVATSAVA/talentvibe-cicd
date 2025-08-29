@@ -687,6 +687,29 @@ def analyze_resumes():
         job_description = request.form['job_description']
         print(f"Job description length: {len(job_description)}")
         
+        # Process job description files if they exist
+        if 'job_description_files' in request.files:
+            job_description_files = request.files.getlist('job_description_files')
+            if job_description_files and any(f.filename for f in job_description_files):
+                print(f"Processing {len(job_description_files)} job description files")
+                jd_content = []
+                
+                for jd_file in job_description_files:
+                    if jd_file.filename:
+                        try:
+                            # Extract text from job description file
+                            content = extract_text_from_file(jd_file)
+                            jd_content.append(f"File: {jd_file.filename}\n{content}")
+                            print(f"Extracted {len(content)} characters from {jd_file.filename}")
+                        except Exception as e:
+                            print(f"Error extracting text from {jd_file.filename}: {e}")
+                            jd_content.append(f"File: {jd_file.filename}\nError extracting content: {str(e)}")
+                
+                if jd_content:
+                    # Use the extracted content instead of the placeholder text
+                    job_description = "\n\n".join(jd_content)
+                    print(f"Updated job description length: {len(job_description)}")
+        
         # Create job with proper session management
         try:
             job = Job(description=job_description, user_id=user.id)
