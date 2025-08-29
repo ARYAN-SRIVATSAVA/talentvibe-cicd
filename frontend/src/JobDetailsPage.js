@@ -323,21 +323,19 @@ const JobDetailsPage = () => {
             <Link to="/jobs" className="back-link">← Back to All Jobs</Link>
             
             {/* Show progress indicator if auto-refresh is still active */}
-            {isProcessing && jobDetails && jobDetails.resumes && jobDetails.resumes.length > 0 && (
+            {(isProcessing || progressInfo.isActive) && (
+                </div>                <h2>Candidate Overview</h2>
                 <div className="glass-container processing-progress">
                     <div className="progress-content">
                         <div className="progress-spinner">🔄</div>
                         <p><strong>Processing resumes...</strong></p>
-                        <p>Currently showing {jobDetails.resumes.length} resume(s)</p>
                         <p>Auto-refresh active - checking for updates every 3 seconds</p>
-                        <p><strong>Progress:</strong> {jobDetails.resumes.filter(r => r.analysis).length}/{jobDetails.resumes.length} analyzed</p>
+                        <p><strong>Progress:</strong> {progressInfo.analyzed}/{progressInfo.total} analyzed</p>
+                        {progressInfo.total > 0 && (
+                            <p>Currently showing {progressInfo.total} resume(s)</p>
+                        )}
                     </div>
-                </div>
-            )}
-            
-            <div className="glass-container job-summary-card">
-                <h2>Candidate Overview</h2>
-                <div className="candidate-summary-table">
+                </div>                <div className="candidate-summary-table">
                     <table>
                         <thead>
                             <tr>
