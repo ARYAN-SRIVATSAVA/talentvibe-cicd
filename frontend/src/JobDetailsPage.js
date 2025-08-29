@@ -103,7 +103,7 @@ const JobDetailsPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
-    const [selectedResumeForFeedback, setSelectedResumeForFeedback] = useState(null);
+    const [progressInfo, setProgressInfo] = useState({ total: 0, analyzed: 0, isActive: false });    const [selectedResumeForFeedback, setSelectedResumeForFeedback] = useState(null);
     const [isInterviewModalOpen, setIsInterviewModalOpen] = useState(false);
     const [currentInterviewResume, setCurrentInterviewResume] = useState(null);
     const detailsRef = useRef(null);
