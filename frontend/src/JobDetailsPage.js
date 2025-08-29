@@ -212,7 +212,7 @@ const JobDetailsPage = () => {
                 clearInterval(interval);
             }
         };
-    }, [fetchJobDetails]); // Removed jobDetails dependency to prevent blinking
+    }, [jobDetails, fetchJobDetails]);
 
     const sortedResumes = useMemo(() => {
         if (!jobDetails?.resumes) return [];
@@ -323,17 +323,15 @@ const JobDetailsPage = () => {
             <Link to="/jobs" className="back-link">← Back to All Jobs</Link>
             
             {/* Show progress indicator if auto-refresh is still active */}
-            {isProcessing && (
+            {isProcessing && jobDetails && jobDetails.resumes && jobDetails.resumes.length > 0 && (
                 <div className="glass-container processing-progress">
                     <div className="progress-content">
                         <div className="progress-spinner">🔄</div>
                         <p><strong>Processing resumes...</strong></p>
-                        {jobDetails && jobDetails.resumes && jobDetails.resumes.length > 0 ? (                        <p>Currently showing {jobDetails.resumes.length} resume(s)</p>
+                        <p>Currently showing {jobDetails.resumes.length} resume(s)</p>
                         <p>Auto-refresh active - checking for updates every 3 seconds</p>
                         <p><strong>Progress:</strong> {jobDetails.resumes.filter(r => r.analysis).length}/{jobDetails.resumes.length} analyzed</p>
-                        ) : (
-                            <p>Waiting for resumes to be processed...</p>
-                        )}                    </div>
+                    </div>
                 </div>
             )}
             
