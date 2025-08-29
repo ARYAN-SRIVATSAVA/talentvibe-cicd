@@ -109,6 +109,7 @@ const JobDetailsPage = () => {
     const detailsRef = useRef(null);
     const stableCountRef = useRef(0);
     const lastResumeCountRef = useRef(0);
+    const autoRefreshStartedRef = useRef(false);
 
     const fetchJobDetails = useCallback(async () => {
         try {
