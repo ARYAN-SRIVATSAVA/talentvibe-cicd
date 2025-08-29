@@ -268,8 +268,8 @@ Resume Content:
 Please provide your analysis in the following JSON format:
 {{
     "candidate_name": "Extract name from resume or 'Name Not Found'",
-    "fit_score": 85,
-    "bucket": "⚡ Book-the-Call",
+    "fit_score": <score between 30-95>,
+    "bucket": "<bucket based on score>",
     "reasoning": "Brief explanation of why this candidate fits or doesn't fit",
     "summary_points": [
         "Key strength 1",
@@ -303,6 +303,30 @@ Focus on:
 4. Red flags or concerns
 5. Overall hire recommendation
 
+
+SCORING CRITERIA:
+- 90-95: Perfect match with all required skills and extensive relevant experience
+- 80-89: Strong match with most required skills and good relevant experience  
+- 70-79: Good match with some required skills and moderate relevant experience
+- 60-69: Moderate match with basic required skills and limited relevant experience
+- 50-59: Weak match with few required skills and minimal relevant experience
+- 30-49: Poor match with very few required skills and no relevant experience
+
+BUCKET ASSIGNMENT:
+- 90-95: "⚡ Book-the-Call"
+- 80-89: "🎯 Strong Match" 
+- 70-79: "🛠️ Bench Prospect"
+- 60-69: "🔍 Further Screening Required"
+- 30-59: "❌ Not a Fit"
+
+Focus on:
+1. Technical skills alignment with job requirements
+2. Experience relevance to the role
+3. Cultural fit indicators
+4. Red flags or concerns
+5. Overall hire recommendation
+
+Be strict in scoring - only give high scores (80+) to candidates who truly match the job requirements well.
 Return only valid JSON.
 """
         
