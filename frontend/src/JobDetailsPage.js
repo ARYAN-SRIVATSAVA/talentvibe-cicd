@@ -170,9 +170,7 @@ const JobDetailsPage = () => {
         if (jobDetails) {
             console.log('🔄 Setting up auto-refresh for job details');
             interval = setInterval(() => {
-                console.log('🔄 Auto-refreshing job details...');
-                
-                // Check current state
+            setIsProcessing(true); // Show progress indicator immediately                // Check current state
                 const totalResumes = jobDetails.resumes?.length || 0;
                 const analyzedResumes = jobDetails.resumes?.filter(r => r.analysis)?.length || 0;
                 
