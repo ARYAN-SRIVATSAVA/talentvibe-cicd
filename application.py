@@ -245,9 +245,8 @@ def extract_text_from_doc_binary(file_stream):
 def analyze_resume_with_ai(job_description, resume_text, filename):
     """Analyze resume using OpenAI GPT-4 with comprehensive error handling"""
     
-    # Check rate limit before making API call
     print(f"Starting AI analysis for {filename}")
-    print(f"OpenAI API key configured: {bool(openai.api_key and openai.api_key != "your-openai-api-key-here")}")
+    print(f"OpenAI API key configured: {bool(openai.api_key and openai.api_key != 'your-openai-api-key-here')}")
     print(f"Rate limit check: {check_rate_limit()}")
     
     # Check if OpenAI API key is configured
@@ -256,20 +255,26 @@ def analyze_resume_with_ai(job_description, resume_text, filename):
         return create_fallback_analysis(filename, "OpenAI API key not configured")
     
     # Check rate limit before making API call
-    # Temporarily disabled for debugging
-Resume Content:
     if not check_rate_limit():
         print(f"Rate limit reached for {filename}, using fallback analysis")
         return create_fallback_analysis(filename, "Rate limit reached")
     
     try:
+        # Prepare prompt with better error handling
+        prompt = f"""
+You are an expert HR recruiter and technical interviewer. Analyze this resume against the job description and provide a comprehensive assessment.
+
+Job Description:
+{job_description[:1000]}
+
+Resume Content:
 {resume_text[:2000]}
 
 Please provide your analysis in the following JSON format:
 {{
     "candidate_name": "Extract name from resume or 'Name Not Found'",
-    "fit_score": <score between 30-95>,
-    "bucket": "<bucket based on score>",
+    "fit_score": 85,
+    "bucket": "⚡ Book-the-Call",
     "reasoning": "Brief explanation of why this candidate fits or doesn't fit",
     "summary_points": [
         "Key strength 1",
@@ -303,37 +308,16 @@ Focus on:
 4. Red flags or concerns
 5. Overall hire recommendation
 
-
-SCORING CRITERIA:
-- 90-95: Perfect match with all required skills and extensive relevant experience
-- 80-89: Strong match with most required skills and good relevant experience  
-- 70-79: Good match with some required skills and moderate relevant experience
-- 60-69: Moderate match with basic required skills and limited relevant experience
-- 50-59: Weak match with few required skills and minimal relevant experience
-- 30-49: Poor match with very few required skills and no relevant experience
-
-BUCKET ASSIGNMENT:
-- 90-95: "⚡ Book-the-Call"
-- 80-89: "🎯 Strong Match" 
-- 70-79: "🛠️ Bench Prospect"
-- 60-69: "🔍 Further Screening Required"
-- 30-59: "❌ Not a Fit"
-
-Focus on:
-1. Technical skills alignment with job requirements
-2. Experience relevance to the role
-3. Cultural fit indicators
-4. Red flags or concerns
-5. Overall hire recommendation
-
-Be strict in scoring - only give high scores (80+) to candidates who truly match the job requirements well.
 Return only valid JSON.
 """
+        
+        print(f"Making OpenAI API call for {filename}")
         
         # Make API call with timeout and retry logic
         max_retries = 3
         for attempt in range(max_retries):
             try:
+                print(f"OpenAI API attempt {attempt + 1}/{max_retries} for {filename}")
                 response = openai.chat.completions.create(
                     model="gpt-4",
                     messages=[{"role": "user", "content": prompt}],
@@ -342,136 +326,67 @@ Return only valid JSON.
                 )
                 
                 analysis_text = response.choices[0].message.content.strip()
+                print(f"OpenAI API response received for {filename}: {len(analysis_text)} characters")
                 
                 # Validate JSON response
                 try:
-                    json.loads(analysis_text)
-                    print(f"AI analysis successful for {filename}")
+                    parsed_json = json.loads(analysis_text)
+                    print(f"AI analysis successful for {filename} - Score: {parsed_json.get('fit_score', 'N/A')}")
                     return analysis_text
-                except json.JSONDecodeError:
-                    print(f"Invalid JSON response for {filename}, using fallback")
+                except json.JSONDecodeError as e:
+                    print(f"Invalid JSON response for {filename}: {e}")
+                    print(f"Response content: {analysis_text[:200]}...")
                     return create_fallback_analysis(filename, "Invalid JSON response")
                     
-            except openai.RateLimitError:
-                print(f"Rate limit error for {filename}, attempt {attempt + 1}/{max_retries}")
+            except openai.RateLimitError as e:
+                print(f"Rate limit error for {filename}, attempt {attempt + 1}/{max_retries}: {e}")
                 if attempt < max_retries - 1:
                     time.sleep(60)  # Wait 1 minute before retry
                     continue
                 else:
                     return create_fallback_analysis(filename, "Rate limit exceeded")
                     
-            except openai.APIError as e:
-                print(f"API error for {filename}: {e}")
+            except openai.QuotaExceededError as e:
+                print(f"Quota exceeded for {filename}: {e}")
                 return create_fallback_analysis(filename, "API quota exceeded")
                 
-            except openai.AuthenticationError:
-                print(f"Authentication error for {filename}")
+            except openai.AuthenticationError as e:
+                print(f"Authentication error for {filename}: {e}")
                 return create_fallback_analysis(filename, "API authentication failed")
                 
-            except openai.APIConnectionError:
-                print(f"API connection error for {filename}, attempt {attempt + 1}/{max_retries}")
+            except openai.APIConnectionError as e:
+                print(f"API connection error for {filename}, attempt {attempt + 1}/{max_retries}: {e}")
                 if attempt < max_retries - 1:
-                    time.sleep(10)  # Wait 10 seconds before retry
+                    time.sleep(30)  # Wait 30 seconds before retry
                     continue
                 else:
                     return create_fallback_analysis(filename, "API connection failed")
                     
             except Exception as e:
-                print(f"Unexpected API error for {filename}: {e}")
-                return create_fallback_analysis(filename, f"API error: {str(e)}")
-        
+                print(f"Unexpected error for {filename}, attempt {attempt + 1}/{max_retries}: {e}")
+                if attempt < max_retries - 1:
+                    time.sleep(30)
+                    continue
+                else:
+                    return create_fallback_analysis(filename, f"Unexpected error: {str(e)}")
+    
     except Exception as e:
         print(f"Critical error in AI analysis for {filename}: {e}")
         return create_fallback_analysis(filename, f"Critical error: {str(e)}")
 
 def create_fallback_analysis(filename, error_reason):
-    """Create a fallback analysis when AI fails with more varied scores"""
-    import random
-    import hashlib
-    
-    # Generate more varied scores using better hashing
-    filename_bytes = filename.encode("utf-8")
-    hash_object = hashlib.md5(filename_bytes)
-    hash_hex = hash_object.hexdigest()
-    
-    # Use different parts of the hash for different aspects
-    score_part = int(hash_hex[:8], 16) % 100
-    bucket_part = int(hash_hex[8:16], 16) % 100
-    
-    # Generate varied scores between 45-95
-    base_score = 45 + (score_part % 50)
-    
-    # Vary the bucket based on the score with some randomness
-    if base_score >= 85:
-        bucket = "⚡ Book-the-Call"
-    elif base_score >= 75:
-        bucket = "🎯 Strong Match"
-    elif base_score >= 65:
-        bucket = "🛠️ Bench Prospect"
-    else:
-        bucket = "❌ Not a Fit"
-    
-    # Extract candidate name from filename
-    candidate_name = filename.split(".")[0].replace("_", " ").replace("-", " ")
-    
-    # Generate realistic skill matches and gaps based on score
-    all_skills = [
-        "Python", "JavaScript", "React", "Node.js", "Java", "Spring Boot", 
-        "SQL", "MongoDB", "AWS", "Docker", "Kubernetes", "Git", "REST APIs",
-        "Machine Learning", "Data Analysis", "Agile", "Scrum", "DevOps",
-        "TypeScript", "Angular", "Vue.js", "PostgreSQL", "Redis", "GraphQL"
-    ]
-    
-    # Higher scores get more skill matches, lower scores get more gaps
-    if base_score >= 80:
-        # High performers: 4-6 matches, 1-2 gaps
-        num_matches = 4 + (bucket_part % 3)
-        num_gaps = 1 + (bucket_part % 2)
-    elif base_score >= 70:
-        # Medium performers: 3-4 matches, 2-3 gaps
-        num_matches = 3 + (bucket_part % 2)
-        num_gaps = 2 + (bucket_part % 2)
-    else:
-        # Lower performers: 1-2 matches, 3-4 gaps
-        num_matches = 1 + (bucket_part % 2)
-        num_gaps = 3 + (bucket_part % 2)
-    
-    # Select skills based on hash for consistency
-    selected_skills = []
-    for i in range(len(all_skills)):
-        if int(hash_hex[i*2:(i+1)*2], 16) % 2 == 0:
-            selected_skills.append(all_skills[i])
-    
-    skill_matches = selected_skills[:num_matches]
-    skill_gaps = selected_skills[num_matches:num_matches + num_gaps]
-    
-    # Generate summary points based on score
-    if base_score >= 80:
-        summary_points = [
-            "Strong technical background",
-            "Relevant experience in key technologies",
-            "Good cultural fit indicators"
-        ]
-    elif base_score >= 70:
-        summary_points = [
-            "Moderate technical skills",
-            "Some relevant experience",
-            "May need additional training"
-        ]
-    else:
-        summary_points = [
-            "Limited technical alignment",
-            "Experience gaps in key areas",
-            "May not be the best fit"
-        ]
-    
+    """Create a fallback analysis when AI fails"""
     return json.dumps({
-        "candidate_name": candidate_name,
-        "fit_score": base_score,
-        "bucket": bucket,
-        "reasoning": f"AI analysis temporarily unavailable: {error_reason}. This is a preliminary assessment based on resume structure. Manual review recommended for detailed evaluation.",
-        "summary_points": summary_points,
-        "skill_matrix": {"matches": skill_matches, "gaps": skill_gaps},
+        "candidate_name": filename.split('.')[0].replace('_', ' '),
+        "fit_score": 70,
+        "bucket": "🛠️ Bench Prospect",
+        "reasoning": f"AI analysis unavailable: {error_reason}. Manual review recommended for detailed evaluation.",
+        "summary_points": [
+            "Analysis completed with fallback",
+            "AI service temporarily unavailable",
+            "Manual review recommended"
+        ],
+        "skill_matrix": {"matches": [], "gaps": []},
         "timeline": [],
         "logistics": {
             "compensation": "Not specified",
