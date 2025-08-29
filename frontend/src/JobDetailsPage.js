@@ -170,11 +170,8 @@ const JobDetailsPage = () => {
         if (jobDetails) {
             console.log('🔄 Setting up auto-refresh for job details');
             interval = setInterval(() => {
-            setIsProcessing(true); // Show progress indicator immediately                // Check current state
-                const totalResumes = jobDetails.resumes?.length || 0;
                 const analyzedResumes = jobDetails.resumes?.filter(r => r.analysis)?.length || 0;
-                
-                console.log(`📊 Resume analysis progress: ${analyzedResumes}/${totalResumes} analyzed`);
+            setIsProcessing(true); // Show progress indicator immediately                
                 
                 // Continue refreshing if:
                 // 1. We have resumes but not all are analyzed
@@ -202,12 +199,10 @@ const JobDetailsPage = () => {
                 } else {
                     console.log('✅ Processing appears complete, stopping auto-refresh');
                     clearInterval(interval);
-                }
-            }, 5000); // Poll every 5 seconds
-        }
+                    setIsProcessing(false); // Stop progress indicator                }
         
-        return () => {
-            if (interval) {
+            }, 5000); // Poll every 5 seconds
+        }        return () => {
                 console.log('🛑 Cleaning up auto-refresh interval');
                 clearInterval(interval);
             }
