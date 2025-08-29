@@ -297,7 +297,7 @@ const JobDetailsPage = () => {
     if (!jobDetails) return <div className="job-details-container"><p>Job not found.</p></div>;
     
     // Show processing state when job exists but no resumes yet
-    if (isProcessing && (!jobDetails?.resumes || jobDetails?.resumes?.length || 0 === 0)) {
+    if (isProcessing && (!jobDetails?.resumes || (jobDetails?.resumes?.length || 0) === 0)) {
         return (
             <div className="job-details-container">
                 <Link to="/jobs" className="back-link">← Back to All Jobs</Link>
