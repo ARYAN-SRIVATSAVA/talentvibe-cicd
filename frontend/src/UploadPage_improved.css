@@ -1,10 +1,19 @@
 .upload-page-container {
     padding-top: 2rem;
     padding-bottom: 2rem;
-}
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;}
 
 .upload-page-container h2 {
-    text-align: center;
+
+.upload-page-container .glass-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}    text-align: center;
 }
 .upload-page-container p {
     text-align: center;
@@ -292,3 +301,4 @@
     100% {
         opacity: 1;
     }
+} 
