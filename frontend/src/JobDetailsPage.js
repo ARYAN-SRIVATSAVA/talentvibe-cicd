@@ -441,3 +441,4 @@ const JobDetailsPage = () => {
 };
 
 export default JobDetailsPage; // testing-auto-refresh deployment
+// Force deployment - auto-refresh and progress indicator fixes
