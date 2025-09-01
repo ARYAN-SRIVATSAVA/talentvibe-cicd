@@ -296,3 +296,5 @@
     }
 }
 /* FORCE REBUILD - LABEL CENTERING FIXES */
+/* CRITICAL FIX: Force production build to include label centering */
+.FORCE-REBUILD-CSS { color: red; }

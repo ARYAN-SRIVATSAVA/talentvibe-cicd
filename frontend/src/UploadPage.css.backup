@@ -17,7 +17,9 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-}
+    align-items: center; /* Center form elements horizontally */
+    max-width: 600px; /* Limit form width for better organization */
+    margin: 0 auto; /* Center the form within the glass container */}
 
 .form-group {
     display: flex;
@@ -25,7 +27,7 @@
 }
 
 .form-group label {
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
     font-weight: 600;
     color: #fff;
 }
@@ -292,4 +294,6 @@
     100% {
         opacity: 1;
     }
-} 
+}
+/* FORCE REBUILD - LABEL CENTERING FIXES */
+/* CRITICAL FIX: Force production build to include label centering */
