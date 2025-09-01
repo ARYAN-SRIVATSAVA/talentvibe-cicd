@@ -87,6 +87,29 @@
     color: var(--text-color-dark);
 }
 .drop-zone-prompt .file-types {
+
+/* FileDropZone Component Styles */
+.file-drop-zone-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%; /* Full width within the form */
+    max-width: 500px; /* Limit width for better visual balance */
+    margin: 0 auto; /* Center the container horizontally */
+    align-items: center; /* Center content within the container */
+}
+
+.drop-zone-label {
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 1rem;
+    text-align: center; /* Center the labels */
+    font-size: 1.2rem; /* Larger labels to match heading hierarchy */
+    width: 100%; /* Full width for proper centering */
+    display: block; /* Block display for proper centering */
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Add subtle shadow for better visibility */
+    letter-spacing: 0.5px; /* Slight letter spacing for better readability */
+}
     font-size: 0.8rem;
 }
 
