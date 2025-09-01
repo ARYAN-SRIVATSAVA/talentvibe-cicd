@@ -47,7 +47,6 @@ const FileDropZone = ({
 
     return (
         <div className="file-drop-zone-container">
-            <label className="drop-zone-label">{label}</label>
             
             <div 
                 className={`file-drop-zone ${isDragging ? 'dragging' : ''}`}
@@ -69,9 +68,6 @@ const FileDropZone = ({
                         onChange={handleFileChange}
                         className="file-input"
                     />
-                    <label htmlFor={inputId} className="file-input-label">
-                        Choose Files
-                    </label>
                 </div>
             </div>
 
