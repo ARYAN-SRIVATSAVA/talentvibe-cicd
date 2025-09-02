@@ -322,3 +322,33 @@
 /* CRITICAL FIX: Force production build to include label centering */
 .FORCE-REBUILD-CSS { color: red; }
 /* Clean CSS version for perfect centering */
+
+
+/* Upload Section Headings */
+.upload-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    border: 1px solid var(--glass-border-color);
+}
+
+.section-heading {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: left;
+    letter-spacing: 0.5px;
+    padding-left: 2rem;
+}
+
+.section-description {
+    margin: 0 0 1.5rem 0;
+    text-align: left;
+    color: var(--text-color);
+    font-size: 0.95rem;
+    line-height: 1.4;
+    opacity: 0.9;
+    padding-left: 2rem;
+}
