@@ -438,7 +438,10 @@ const UploadPage = () => {
                 </div>
                 <p>Provide a job description and the corresponding résumés to begin the analysis.</p>
                 <form onSubmit={handleSubmit} className="upload-form">
-                    <FileDropZone
+                    {/* Job Description Upload Section */}
+                    <div className="upload-section">
+                        <h3 className="section-heading">📄 Upload Job Descriptions</h3>
+                        <p className="section-description">Upload one or more job description files to define the role requirements.</p>                    <FileDropZone
                         label="Upload Job Description Files"
                         files={jobDescriptionFiles}
                         onFilesChange={handleJdFileChange}
@@ -451,7 +454,7 @@ const UploadPage = () => {
                     />
                     
                     {/* Show loading state when checking JD */}
-                    {isCheckingJd && (
+                    </div>                    {isCheckingJd && (
                         <div className="jd-checking">
                             <div className="checking-spinner">⏳</div>
                             <p>Checking for existing job description...</p>
@@ -544,7 +547,10 @@ const UploadPage = () => {
                         </div>
                     )}
                     
-                    <FileDropZone
+                    {/* Resume Upload Section */}
+                    <div className="upload-section">
+                        <h3 className="section-heading">☁️ Upload Resumes</h3>
+                        <p className="section-description">Upload one or more resume files to analyze against the job description.</p>                    <FileDropZone
                         label="Upload Résumés"
                         files={resumes}
                         onFilesChange={(files) => {
@@ -560,7 +566,7 @@ const UploadPage = () => {
                     />
                     
                     {/* Duplicate Check Button */}
-                    {resumes.length > 0 && (
+                    </div>                    {resumes.length > 0 && (
                         <div className="duplicate-check-section">
                             {!existingJdInfo || !existingJdInfo.job ? (
                                 <div className="duplicate-check-info">
